@@ -17,5 +17,16 @@ dependencies = [
     "requests",
 ]
 
+[project.scripts]
+sback = "sback.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["sback"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
