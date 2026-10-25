@@ -25,6 +25,15 @@ uv sync
 uv run pytest
 ```
 
+### Линтинг
+
+Python-код форматируется через black.
+
+```bash
+uv run black .
+uv run black --check .
+```
+
 ### Локализация
 
 ```bash

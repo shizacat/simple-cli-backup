@@ -23,6 +23,7 @@ sback = "sback.main:main"
 
 [dependency-groups]
 dev = [
+    "black",
     "pytest",
 ]
 
