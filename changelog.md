@@ -1,0 +1,42 @@
+# Changelog
+
+Все заметные изменения этого проекта документируются в этом файле.
+
+Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/0.3.0/),
+проект придерживается [семантического версионирования](https://semver.org/lang/ru/).
+
+## [Unreleased]
+
+### Added
+
+- Опция `--plugin-info`
+
+### Changed
+
+- Улучшения кода
+
+## [1.3]
+
+### Fixed
+
+- Исправление ошибок
+
+## [1.2]
+
+### Added
+
+- Вывод версии
+
+### Changed
+
+- Dropbox API v2
+
+### Fixed
+
+- Мелкие исправления
+
+## [1.1]
+
+### Fixed
+
+- Исправление ошибок в блоках `place.mysql` и `place.base`

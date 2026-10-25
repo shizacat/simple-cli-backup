@@ -1,0 +1,9 @@
+*.pyc
+build
+.sonar
+dist
+tmp/*
+scb.pot
+venv/*
+.venv/*
+.DS_Store
