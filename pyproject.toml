@@ -13,6 +13,7 @@ authors = [{ name = "Alexey Matveev" }]
 dependencies = [
     "dropbox",
     "mysql-connector-python",
+    "pydantic>=2",
     "pyyaml",
     "requests",
 ]

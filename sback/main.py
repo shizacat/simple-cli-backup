@@ -3,26 +3,10 @@
 """Точка входа Simple CLI Backup."""
 
 import argparse
-import os
 import sys
 
-import yaml
-
 from sback import __version__
-
-
-def read_file_config(config_file: str) -> dict:
-	"""Читает файл настроек.
-
-	Returns:
-		Содержимое файла в виде словаря.
-	"""
-	if not os.path.isfile(config_file):
-		print("The file of settings not found")
-		sys.exit(1)
-
-	with open(config_file, encoding="utf-8") as config:
-		return yaml.load(config, Loader=yaml.FullLoader)
+from sback.lib.config import Config, ConfigError
 
 
 def plugin_info() -> None:
@@ -114,7 +98,17 @@ def main(argv: list[str] | None = None) -> int:
 		return 0
 
 	config_file = args.config_test if args.config_test is not None else args.config
-	config = read_file_config(config_file)
+	if config_file is None:
+		parser.error("specify exactly one of --config, --config-test, --plugin-info, or --version")
+
+	try:
+		config = Config.from_file(config_file)
+	except FileNotFoundError:
+		print("The file of settings not found")
+		return 1
+	except ConfigError as exc:
+		print(f"Error: \n\t{exc}")
+		return 1
 
 	from sback.app import scb
 	from sback.exception import ScbException
