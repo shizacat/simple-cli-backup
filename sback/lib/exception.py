@@ -7,3 +7,7 @@ class ConfigError(Exception):
 
 class PlaceError(Exception):
     """Ошибка места хранения."""
+
+
+class ArchiveNameError(Exception):
+    """Имя архива не соответствует формату {срез}_{год}.{месяц}.{день}.{NNNN}.tar."""

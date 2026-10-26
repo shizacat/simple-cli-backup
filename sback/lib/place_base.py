@@ -75,6 +75,21 @@ class PlaceBase(Generic[ConfigT]):
                 return subclass(config)
         raise PlaceError(f"Object 'place' of type {config.type} not found")
 
+    def rotate(self) -> None:
+        """Удаляет самые старые файлы, если их больше rotate.count.
+
+        Raises:
+            PlaceError: файл не удалось удалить.
+        """
+        if self._config.rotate is None:
+            return
+        names = self.list_files()
+        extra = len(names) - self._config.rotate.count
+        if extra <= 0:
+            return
+        for name in sorted(names)[:extra]:
+            self.delete_file(name)
+
     # --- Override methods ---
 
     def process(self, result_path: str | Path) -> None:
@@ -91,3 +106,26 @@ class PlaceBase(Generic[ConfigT]):
         Инициализация места, если нужна интерактивная настройка.
         Если не требуется, то можно не реализовывать
         """
+
+    def list_files(self) -> list[str]:
+        """Имена файлов бэкапа в месте хранения.
+
+        Returns:
+            Список имен файлов, которые участвуют в ротации.
+
+        Raises:
+            NotImplementedError: место не возвращает список файлов.
+        """
+        raise NotImplementedError
+
+    def delete_file(self, file_name: str) -> None:
+        """Удаляет файл из места хранения.
+
+        Args:
+            file_name: Имя файла из list_files.
+
+        Raises:
+            NotImplementedError: место не удаляет файлы.
+            PlaceError: файл не удалось удалить.
+        """
+        raise NotImplementedError

@@ -7,10 +7,10 @@
     places:
       - name: local
         type: folder
+        rotate:
+          count: 6
         config:
           path: /var/backups
-          rotate:
-            count: 6
 
     notices:
       - name: mail
@@ -40,6 +40,12 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sback.lib.exception import ConfigError
 
 
+class Rotate(BaseModel):
+    """Сколько копий хранить в месте."""
+
+    count: int = Field(strict=True, description="Сколько последних копий оставлять")
+
+
 class Place(BaseModel):
     """Место хранения бэкапа.
 
@@ -51,6 +57,10 @@ class Place(BaseModel):
 
     name: str = Field(description="Имя места хранения")
     type: str = Field(description="Тип плагина place")
+    rotate: Rotate | None = Field(
+        default=None,
+        description="Ротация копий. Без поля хранятся все файлы",
+    )
     config: dict[str, Any] = Field(
         default_factory=dict,
         description="Настройки конкретного места",
