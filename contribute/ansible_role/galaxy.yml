@@ -1,0 +1,17 @@
+---
+namespace: shizacat
+name: sback
+version: 0.1.0
+readme: README.md
+authors:
+  - Alexey Matveev
+description: Устанавливает sback в отдельное виртуальное окружение
+license:
+  - MIT
+tags:
+  - backup
+  - sback
+repository: https://github.com/shizacat/simple-cli-backup
+issues: https://github.com/shizacat/simple-cli-backup/issues
+build_ignore:
+  - .gitignore

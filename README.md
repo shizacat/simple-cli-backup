@@ -27,25 +27,21 @@ pip install sback
 - hosts: servers
   become: true
   roles:
-    - role: contribute/ansible_role
+    - role: shizacat.sback.sback
 ```
 
-Установка через ansible:
+Установка через Ansible. Фрагмент `#/contribute/ansible_role/` берёт коллекцию из этого каталога репозитория. `version` — тег, ветка или коммит Git.
 
 ```bash
 ansible-galaxy install -r requirements.yml
 ```
 
-Пример файла зависимостей:
 ```yaml
-- src: https://github.com/shizacat/simple-cli-backup
-  name: sback
-  version: "0.1.0"
-  scm: git
-  path: contribute/ansible_role
-  requirements:
-    - name: sback
-      version: 0.1.0
+---
+collections:
+  - name: https://github.com/shizacat/simple-cli-backup.git#/contribute/ansible_role/
+    type: git
+    version: "0.1.0"
 ```
 
 ## Разработка

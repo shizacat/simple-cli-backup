@@ -20,27 +20,36 @@
 
 ## Подключение
 
-Плейбук лежит в корне репозитория:
+Каталог `contribute/ansible_role` — коллекция. Роль внутри называется `sback`, в плейбуке это `shizacat.sback.sback`.
+
+Файл `requirements.yml`:
+
+```yaml
+---
+collections:
+  - name: https://github.com/shizacat/simple-cli-backup.git#/contribute/ansible_role/
+    type: git
+    version: "0.1.0"
+```
+
+```bash
+ansible-galaxy install -r requirements.yml
+```
 
 ```yaml
 - hosts: servers
   become: true
   roles:
-    - role: contribute/ansible_role
+    - role: shizacat.sback.sback
 ```
 
-Либо добавьте каталог в путь ролей:
-
-```ini
-[defaults]
-roles_path = contribute
-```
+Из клона репозитория, без Galaxy:
 
 ```yaml
 - hosts: servers
   become: true
   roles:
-    - role: ansible_role
+    - role: contribute/ansible_role/roles/sback
 ```
 
 ## Переменные
@@ -83,7 +92,7 @@ roles_path = contribute
 - hosts: servers
   become: true
   roles:
-    - role: contribute/ansible_role
+    - role: shizacat.sback.sback
       sback_version: "1.3.0"
 ```
 
@@ -93,7 +102,7 @@ roles_path = contribute
 - hosts: servers
   become: true
   roles:
-    - role: contribute/ansible_role
+    - role: shizacat.sback.sback
       sback_python: python3.12
       sback_pip_state: latest
 ```
