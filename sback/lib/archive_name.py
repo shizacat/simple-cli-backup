@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
+from datetime import date
 
 from sback.lib.exception import ArchiveNameError
 
@@ -19,6 +20,23 @@ _ARCHIVE_NAME = re.compile(
 _ARCHIVE_BASE_NAME = re.compile(
     r"^(?P<base>.*_\d{4}\.\d{2}\.\d{2})\.(?P<ext>(?!\d{4}(?:\.|\Z)).+)\Z"
 )
+
+
+def archive_base_name(name: str, extension: str) -> str:
+    """Собирает имя архива без индекса.
+
+    Имя подходит под шаблон ``_ARCHIVE_BASE_NAME``:
+    ``{имя}_{год}.{месяц}.{день}.{расширение}``.
+
+    Args:
+        name: Имя среза или цели.
+        extension: Расширение без ведущей точки, например ``tar`` или ``tar.gz``.
+
+    Returns:
+        Имя архива без индекса.
+    """
+    today = date.today()
+    return f"{name}_{today.year}.{today.month:02d}.{today.day:02d}.{extension}"
 
 
 def is_archive_name(file_name: str) -> bool:

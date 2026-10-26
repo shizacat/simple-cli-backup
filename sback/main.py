@@ -6,8 +6,9 @@ import argparse
 import sys
 
 from sback import __version__
+from sback.lib.backup import Backup
 from sback.lib.config import Config
-from sback.lib.exception import ConfigError
+from sback.lib.exception import ArchiveNameError, ConfigError, PlaceError, TargetError
 
 
 def plugin_info() -> None:
@@ -115,29 +116,25 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: \n\t{exc}")
         return 1
 
-    from sback.app import scb
-    from sback.exception import ScbException
+    try:
+        backup = Backup(config)
+    except (ConfigError, PlaceError, TargetError) as exc:
+        print(f"Error: \n\t{exc}")
+        return 1
 
     if args.config_test is not None:
-        try:
-            scb(config=config)
-        except ScbException as exc:
-            print(f"Error: \n\t{exc}")
-            return 1
-        else:
-            print("Success")
+        print("Success")
         return 0
 
     try:
-        service = scb(config=config)
         if args.init:
-            service.init()
+            backup.init()
         else:
-            service.process()
+            backup.process()
     except KeyboardInterrupt:
         print("\nThe operation was interrupted")
         return 0
-    except ScbException as exc:
+    except (ArchiveNameError, ConfigError, PlaceError, TargetError) as exc:
         print("[E]", exc)
         return 1
 

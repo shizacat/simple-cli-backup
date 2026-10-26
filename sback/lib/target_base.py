@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import ClassVar, Generic, TypeVar
 
@@ -81,18 +82,23 @@ class TargetBase(Generic[ConfigT]):
 
     # --- Override methods ---
 
-    def process(self, tmp_dir: str | Path, dir_result: str | Path) -> str:
-        """Выполняет цель и кладет результат в каталог результата.
+    def process(self, tmp_dir: Path) -> Iterable[Path]:
+        """Готовит файлы для архивирования
+        Они могут быть как во временном каталоге так и просто передаваться.
+        И возвращает их пути.
+
+        ``tmp_dir`` можно использовать для промежуточных файлов.
+        Если файл создан там, его путь нужно вернуть из этого метода:
+        после выхода каталог удаляется.
 
         Args:
-            tmp_dir: Каталог для временных файлов.
-            dir_result: Каталог, куда кладется итоговый файл.
+            tmp_dir: Временный каталог для файлов цели.
 
         Returns:
-            Имя итогового файла в dir_result.
+            Пути файлов для архива среза. Это может быть список или итератор.
 
         Raises:
             NotImplementedError: цель не реализована.
-            TargetError: цель не смогла подготовить файл.
+            TargetError: цель не смогла подготовить файлы.
         """
         raise NotImplementedError

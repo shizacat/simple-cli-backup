@@ -1,5 +1,3 @@
-import tarfile
-from datetime import date
 from pathlib import Path
 
 import pytest
@@ -26,28 +24,15 @@ def test_factory_returns_file(tmp_path: Path) -> None:
     assert isinstance(TargetBase.factory(config), File)
 
 
-def test_process_archives_existing_path(tmp_path: Path) -> None:
+def test_process_returns_existing_path(tmp_path: Path) -> None:
     source = tmp_path / "note.txt"
     source.write_text("backup", encoding="utf-8")
-    result_dir = tmp_path / "result"
-    result_dir.mkdir()
 
-    archive_name = _target(str(source)).process(tmp_path, result_dir)
-
-    today = date.today()
-    assert archive_name == f"files_{today.year}.{today.month:02d}.{today.day:02d}.tar.gz"
-    with tarfile.open(result_dir / archive_name, "r:gz") as tar:
-        assert source.name in tar.getnames()[-1]
+    assert list(_target(str(source)).process(tmp_path / "tmp")) == [source]
 
 
 def test_process_skips_missing_path(tmp_path: Path) -> None:
-    result_dir = tmp_path / "result"
-    result_dir.mkdir()
-
-    archive_name = _target(str(tmp_path / "absent")).process(tmp_path, result_dir)
-
-    with tarfile.open(result_dir / archive_name, "r:gz") as tar:
-        assert tar.getnames() == []
+    assert list(_target(str(tmp_path / "absent")).process(tmp_path / "tmp")) == []
 
 
 def test_path_is_required() -> None:
