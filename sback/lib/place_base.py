@@ -9,6 +9,7 @@ from typing import ClassVar, Generic, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from sback.lib.archive_name import archiv_name_add_index
 from sback.lib.config import Place
 from sback.lib.exception import PlaceError
 
@@ -90,14 +91,33 @@ class PlaceBase(Generic[ConfigT]):
         for name in sorted(names)[:extra]:
             self.delete_file(name)
 
-    # --- Override methods ---
-
     def process(self, result_path: str | Path) -> None:
         """Копирует файл бэкапа в место хранения и запускает ротацию.
 
         Args:
-            result_path: Путь к файлу результата бэкапа,
-                именно он будет отправлен в место хранения
+            result_path: Путь к файлу результата бэкапа.
+
+        Raises:
+            ArchiveNameError: исходное имя не вида {срез}_{год}.{месяц}.{день}.{расширение}.
+            PlaceError: файл не удалось скопировать или удалить при ротации.
+        """
+        source = Path(result_path)
+        file_name = archiv_name_add_index(source.name, self.list_files())
+        self.copy(source, file_name)
+        self.rotate()
+
+    # --- Override methods ---
+
+    def copy(self, source: Path, file_name: str) -> None:
+        """Копирует файл бэкапа в место хранения.
+
+        Args:
+            source: Путь к файлу результата бэкапа.
+            file_name: Имя файла что должно быть в месте хранения
+
+        Raises:
+            NotImplementedError: место не копирует файлы.
+            PlaceError: файл не удалось скопировать.
         """
         raise NotImplementedError
 

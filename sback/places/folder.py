@@ -8,7 +8,7 @@ from typing import ClassVar
 
 from pydantic import BaseModel, Field
 
-from sback.lib.archive_name import archiv_name_add_index, is_archive_name
+from sback.lib.archive_name import is_archive_name
 from sback.lib.config import Place
 from sback.lib.exception import PlaceError
 from sback.lib.place_base import PlaceBase
@@ -54,26 +54,27 @@ class Folder(PlaceBase[FolderConfig]):
 
     # --- Override methods ---
 
-    def process(self, result_path: str | Path) -> None:
-        """Копирует файл бэкапа в каталог и удаляет лишние копии.
+    def copy(self, source: Path, file_name: str) -> None:
+        """Копирует файл в каталог места.
 
         Args:
-            result_path: Путь к файлу результата бэкапа.
+            source: Исходный файл.
+            file_name: Имя файла в каталоге.
 
         Raises:
-            ArchiveNameError: исходное имя не вида {срез}_{год}.{месяц}.{день}.{расширение}.
-            PlaceError: файл не удалось скопировать или удалить при ротации.
+            PlaceError: файл не удалось скопировать.
         """
-        source = Path(result_path)
-        destination = self._path / archiv_name_add_index(source.name, self.list_files())
         try:
-            shutil.copy2(source, destination)
+            shutil.copy2(source, self._path.joinpath(file_name))
         except OSError as exc:
             raise PlaceError(f"ошибка копирования: {exc}") from exc
-        self.rotate()
 
     def list_files(self) -> list[str]:
-        """Имена файлов бэкапа в каталоге назначения."""
+        """Имена файлов бэкапа в каталоге назначения.
+
+        Returns:
+            Имена архивов в каталоге места.
+        """
         names: list[str] = []
         for item in self._path.iterdir():
             if item.is_file() and is_archive_name(item.name):
