@@ -1,0 +1,5 @@
+# Файл поддерживает роль Ansible sback.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+{{ sback_cron_schedule }} {{ sback_cron_user }} {{ sback_bin_path | quote }} --config {{ sback_config_path | quote }}

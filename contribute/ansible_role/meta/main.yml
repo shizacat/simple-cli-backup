@@ -1,0 +1,29 @@
+---
+galaxy_info:
+  role_name: sback
+  author: Alexey Matveev
+  description: Устанавливает sback в отдельное виртуальное окружение
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - backup
+    - python
+    - sback
+
+dependencies: []

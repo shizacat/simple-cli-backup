@@ -1,0 +1,84 @@
+---
+- name: Записать файл настроек и задание cron
+  become: true
+  when: sback_config | default({}, true) | length > 0
+  block:
+    - name: Проверить файл настроек в переменных
+      ansible.builtin.assert:
+        that:
+          - sback_config is mapping or sback_config is string
+          - sback_config_path | length > 0
+        fail_msg: >-
+          sback_config должен быть словарём или текстом YAML.
+          sback_config_path — путь к файлу в /etc.
+
+    - name: Проверить расписание cron
+      when: sback_cron_enabled | bool
+      ansible.builtin.assert:
+        that:
+          - sback_cron_schedule is match('^\S+(?:[ \t]+\S+){4}$')
+          - sback_cron_user is match('^[A-Za-z0-9._-]+$')
+        fail_msg: >-
+          sback_cron_schedule — пять полей cron: минута, час, день месяца,
+          месяц, день недели. Например "30 2 * * *".
+          sback_cron_user — имя пользователя без пробелов.
+
+    - name: Создать каталог файла настроек
+      ansible.builtin.file:
+        path: "{{ sback_config_path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Записать файл настроек
+      ansible.builtin.copy:
+        dest: "{{ sback_config_path }}"
+        content: "{{ __sback_config_body if __sback_config_body.endswith('\n') else __sback_config_body + '\n' }}"
+        owner: "{{ sback_config_owner }}"
+        group: "{{ sback_config_group }}"
+        mode: "{{ sback_config_mode }}"
+      vars:
+        __sback_config_body: "{{ sback_config if sback_config is string else sback_config | to_nice_yaml(indent=2, sort_keys=false, width=4096) }}"
+
+    - name: Проверить файл настроек утилитой sback
+      ansible.builtin.command:
+        argv:
+          - "{{ sback_bin_path }}"
+          - --config-test
+          - "{{ sback_config_path }}"
+      changed_when: false
+
+    - name: Установить пакет cron
+      when: sback_cron_enabled | bool
+      ansible.builtin.package:
+        name: "{{ sback_cron_package }}"
+        state: present
+
+    - name: Включить службу cron
+      when: sback_cron_enabled | bool
+      ansible.builtin.service:
+        name: "{{ sback_cron_service }}"
+        state: started
+        enabled: true
+
+    - name: Поставить задание в cron.d
+      when: sback_cron_enabled | bool
+      ansible.builtin.template:
+        src: sback.cron.j2
+        dest: "{{ sback_cron_path }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Удалить задание cron
+      when: not (sback_cron_enabled | bool)
+      ansible.builtin.file:
+        path: "{{ sback_cron_path }}"
+        state: absent
+
+    - name: Восстановить контексты SELinux для настроек и cron
+      when: (ansible_selinux | default({"status": "disabled"})).status == "enabled"
+      ansible.builtin.command:
+        argv: "{{ ['restorecon', '-R', sback_config_path | dirname, sback_config_path] + ([sback_cron_path] if sback_cron_enabled | bool else []) }}"
+      changed_when: false

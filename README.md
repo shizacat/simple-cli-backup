@@ -19,6 +19,35 @@ pip install sback
 
 Через консоль можно будет запустить через `sback` команду.
 
+### Ansible
+
+Роль [contribute/ansible_role](contribute/ansible_role/README.md) ставит `sback` в отдельное виртуальное окружение `/opt/sback` и создаёт ссылку `/usr/local/bin/sback`. Зависимости Python остаются в этом окружении. Если задать `sback_config`, роль записывает этот YAML в `/etc/sback/config.yml` и добавляет запуск в `/etc/cron.d/sback`. Время запуска задаётся в `sback_cron_schedule`.
+
+```yaml
+- hosts: servers
+  become: true
+  roles:
+    - role: contribute/ansible_role
+```
+
+Установка через ansible:
+
+```bash
+ansible-galaxy install -r requirements.yml
+```
+
+Пример файла зависимостей:
+```yaml
+- src: https://github.com/shizacat/simple-cli-backup
+  name: sback
+  version: "0.1.0"
+  scm: git
+  path: contribute/ansible_role
+  requirements:
+    - name: sback
+      version: 0.1.0
+```
+
 ## Разработка
 
 Документация: [docs/README.md](docs/README.md).

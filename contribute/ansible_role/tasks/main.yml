@@ -1,0 +1,155 @@
+---
+- name: Установить sback в отдельное виртуальное окружение
+  become: true
+  block:
+    - name: Проверить параметры роли
+      ansible.builtin.assert:
+        that:
+          - sback_pip_state in ["present", "latest"]
+          - sback_venv_path | length > 0
+          - sback_bin_path | length > 0
+          - sback_python | length > 0
+          - sback_package | length > 0
+        fail_msg: >-
+          Задайте sback_python, sback_package, sback_venv_path и sback_bin_path.
+          sback_pip_state может быть present или latest.
+
+    - name: Проверить, что версия указана для пакета PyPI
+      when: sback_version | string | length > 0
+      ansible.builtin.assert:
+        that:
+          - sback_package is match('^[A-Za-z0-9_.-]+$')
+        fail_msg: >-
+          sback_version подходит только для имени пакета на PyPI.
+          Для каталога с исходниками или VCS-ссылки оставьте sback_version пустым.
+
+    - name: Проверить семейство ОС
+      when: sback_system_packages | length == 0
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family in ["Debian", "RedHat"]
+        fail_msg: >-
+          Семейство {{ ansible_os_family | default('unknown') }} роль сама не
+          настраивает. Задайте sback_system_packages списком пакетов
+          с Python 3.11+ и модулем venv.
+
+    - name: Обновить кэш apt
+      when: ansible_pkg_mgr | default('') == 'apt'
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Установить пакеты для виртуального окружения
+      ansible.builtin.package:
+        name: "{{ __sback_packages }}"
+        state: present
+      vars:
+        __sback_python_pkg: "{{ sback_python | basename }}"
+        __sback_package_map:
+          Debian:
+            - ca-certificates
+            - "{{ __sback_python_pkg }}"
+            - "{{ __sback_python_pkg }}-venv"
+          RedHat:
+            - ca-certificates
+            - "{{ __sback_python_pkg }}"
+            - "{{ __sback_python_pkg }}-pip"
+        __sback_packages: "{{ sback_system_packages if sback_system_packages | length > 0 else __sback_package_map[ansible_os_family] }}"
+
+    - name: Узнать версию Python
+      ansible.builtin.command:
+        argv:
+          - "{{ sback_python }}"
+          - -c
+          - import sys; print("%d.%d" % sys.version_info[:2])
+      register: sback_python_version
+      changed_when: false
+
+    - name: Потребовать Python 3.11 или новее
+      ansible.builtin.assert:
+        that:
+          - sback_python_version.stdout is version("3.11", ">=")
+        fail_msg: >-
+          sback нужен Python 3.11 или новее, а {{ sback_python }} сообщает
+          {{ sback_python_version.stdout }}. Укажите интерпретатор в sback_python.
+          На Debian и Ubuntu пакет venv называется так же, как интерпретатор,
+          с суффиксом -venv, например python3.12 и python3.12-venv.
+
+    - name: Создать каталог виртуального окружения
+      ansible.builtin.file:
+        path: "{{ sback_venv_path }}"
+        state: directory
+        owner: "{{ sback_user }}"
+        group: "{{ sback_group }}"
+        mode: "0755"
+
+    - name: Создать виртуальное окружение
+      become_user: "{{ sback_user }}"
+      ansible.builtin.command:
+        argv:
+          - "{{ sback_python }}"
+          - -m
+          - venv
+          - --upgrade-deps
+          - "{{ sback_venv_path }}"
+        creates: "{{ sback_venv_path }}/bin/python"
+
+    - name: Установить sback в виртуальное окружение
+      become_user: "{{ sback_user }}"
+      ansible.builtin.pip:
+        name: "{{ sback_package }}"
+        version: "{{ sback_version | default(omit, true) }}"
+        state: "{{ sback_pip_state }}"
+        executable: "{{ sback_venv_path }}/bin/pip"
+        extra_args: --disable-pip-version-check --no-cache-dir
+      environment:
+        PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+    - name: Открыть окружение для запуска другим пользователям
+      ansible.builtin.command:
+        argv:
+          - chmod
+          - -R
+          - a+rX
+          - "{{ sback_venv_path }}"
+      changed_when: false
+
+    - name: Создать каталог для команды sback
+      ansible.builtin.file:
+        path: "{{ sback_bin_path | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Добавить sback в PATH
+      ansible.builtin.file:
+        src: "{{ sback_venv_path }}/bin/sback"
+        dest: "{{ sback_bin_path }}"
+        state: link
+        force: true
+
+    - name: Восстановить контексты SELinux
+      when: (ansible_selinux | default({"status": "disabled"})).status == "enabled"
+      ansible.builtin.command:
+        argv:
+          - restorecon
+          - -R
+          - "{{ sback_venv_path }}"
+          - "{{ sback_bin_path }}"
+      changed_when: false
+
+    - name: Проверить команду sback
+      ansible.builtin.command:
+        argv:
+          - "{{ sback_bin_path }}"
+          - --version
+      register: sback_installed_version
+      changed_when: false
+
+    - name: Сообщить установленную версию
+      ansible.builtin.debug:
+        msg: "sback {{ sback_installed_version.stdout }} установлен в {{ sback_venv_path }}"
+
+    - name: Настроить файл бэкапа и задание cron
+      ansible.builtin.include_tasks: config.yml

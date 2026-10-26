@@ -1,0 +1,49 @@
+---
+# Интерпретатор, которым создаётся виртуальное окружение. Нужен Python 3.11+.
+sback_python: python3
+
+# Каталог окружения. Зависимости sback ставятся только сюда.
+sback_venv_path: /opt/sback
+
+# Ссылка на консольную команду из окружения.
+sback_bin_path: /usr/local/bin/sback
+
+# Имя пакета на PyPI, каталог с исходниками или ссылка для pip.
+sback_package: sback
+
+# Пустая строка оставляет выбор версии на pip.
+# Для PyPI указывайте версию в кавычках, например "1.3.0".
+sback_version: ""
+
+# present ставит пакет, если его ещё нет. latest обновляет уже установленный.
+sback_pip_state: present
+
+# Пустой список: роль сама выбирает пакеты ОС с интерпретатором и venv.
+sback_system_packages: []
+
+# Владелец файлов окружения. Учётная запись и группа должны уже существовать.
+sback_user: root
+sback_group: root
+
+# Файл настроек бэкапа. Пустой словарь или пустая строка — роль его не пишет
+# и задание cron не создаёт. Значение может быть словарём или текстом YAML.
+sback_config: {}
+
+# Куда записать sback_config.
+sback_config_path: /etc/sback/config.yml
+sback_config_owner: root
+sback_config_group: root
+sback_config_mode: "0640"
+
+# Задание в /etc/cron.d. Учитывается, только когда sback_config не пустой.
+# false записывает файл настроек и удаляет задание.
+sback_cron_enabled: true
+sback_cron_path: /etc/cron.d/sback
+sback_cron_user: root
+
+# Пять полей cron: минута, час, день месяца, месяц, день недели.
+# По умолчанию каждый день в 03:00.
+sback_cron_schedule: "0 3 * * *"
+
+sback_cron_package: "{{ 'cron' if ansible_os_family == 'Debian' else 'cronie' }}"
+sback_cron_service: "{{ 'cron' if ansible_os_family == 'Debian' else 'crond' }}"
