@@ -317,3 +317,92 @@ def test_archive_open_error_is_reported(
         backup.process()
 
     assert "files - Error" in sent[0][1]
+
+
+def test_process_reports_the_first_notify_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "note.txt"
+    source.write_text("backup", encoding="utf-8")
+    destination = tmp_path / "backups"
+    destination.mkdir()
+    sent: list[str] = []
+
+    def fail_send(self: Email, body: str) -> None:
+        sent.append(self._config.name)
+        raise NotifyError(f"smtp {self._config.name}")
+
+    monkeypatch.setattr("sback.notices.email.Email.send", fail_send)
+    with pytest.raises(NotifyError, match="smtp always"):
+        Backup(
+            _notice_config(
+                source,
+                destination,
+                notify="      - name: always\n      - name: on-good\n        status: good",
+            )
+        ).process()
+
+    assert sent == ["always", "on-good"]
+
+
+def test_target_error_keeps_files_of_other_targets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "note.txt"
+    source.write_text("backup", encoding="utf-8")
+    destination = tmp_path / "backups"
+    destination.mkdir()
+    sent = _capture_mail(monkeypatch)
+    config = Config.from_yaml(f"""
+places:
+  - name: local
+    type: folder
+    config:
+      path: "{destination}"
+notices:
+  - name: on-bad
+    type: email
+    config:
+      server: localhost
+      to: [a@example.com]
+      from: backup@example.com
+slises:
+  - name: daily
+    place: [local]
+    notify:
+      - name: on-bad
+        status: bad
+    target:
+      - name: db
+        type: file
+        config:
+          path: ["{source}"]
+      - name: files
+        type: file
+        config:
+          path: ["{source}"]
+""")
+
+    class _Broken:
+        def process(self, tmp_dir: Path) -> list[Path]:
+            raise TargetError("db down")
+
+    class _Files:
+        def process(self, tmp_dir: Path) -> list[Path]:
+            return [source]
+
+    def factory(target: object) -> object:
+        if getattr(target, "name", None) == "db":
+            return _Broken()
+        return _Files()
+
+    backup = Backup(config)
+    monkeypatch.setattr(TargetBase, "factory", factory)
+
+    with pytest.raises(TargetError, match="db down"):
+        backup.process()
+
+    assert list(destination.iterdir())
+    assert "db - Error. db down" in sent[0][1]
+    assert "files - Success" in sent[0][1]
+    assert "local - Success" in sent[0][1]
