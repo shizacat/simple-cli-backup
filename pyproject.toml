@@ -7,15 +7,15 @@ name = "sback"
 version = "1.3.0"
 description = "Простая настройка бэкапов на серверах"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Alexey Matveev" }]
 dependencies = [
-    "dropbox",
+    "dropbox>=12.2.4",
     "mysql-connector-python",
     "pydantic>=2",
     "pyyaml",
-    "requests",
+    "requests>=2.34.2",
 ]
 
 [project.scripts]

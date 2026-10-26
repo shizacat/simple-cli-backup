@@ -95,4 +95,5 @@ def test_plugin_info_lists_registered_plugins(
         "\n"
         "Place plugins:\n"
         "    folder - Копирует файлы в указанную папку\n"
+        "    dropbox - Копирует файлы в Dropbox\n"
     )
