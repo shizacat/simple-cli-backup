@@ -21,6 +21,16 @@ Python 3.10+
 uv sync
 ```
 
+### Запуск
+
+```bash
+uv run sback --config config.yml
+uv run sback -t config.yml
+uv run sback init --config config.yml
+```
+
+`-t` проверяет файл настроек и не запускает бэкап. То же самое делает `--config-test`.
+
 ### Тестирование
 
 ```bash
