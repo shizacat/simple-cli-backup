@@ -6,7 +6,7 @@ from sback.lib.target_base import TargetBase
 
 
 def test_factory_unknown_type() -> None:
-    config = Target.model_validate({"name": "files", "type": "file"})
+    config = Target.model_validate({"name": "files", "type": "unknown"})
     with pytest.raises(TargetError):
         TargetBase.factory(config)
 
