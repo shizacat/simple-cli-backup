@@ -92,6 +92,7 @@ def test_plugin_info_lists_registered_plugins(
     assert capsys.readouterr().out == (
         "Target plugins:\n"
         "    file - Работает с файлами и каталогами\n"
+        "    mongodb - Делает архив баз MongoDB\n"
         "\n"
         "Place plugins:\n"
         "    folder - Копирует файлы в указанную папку\n"

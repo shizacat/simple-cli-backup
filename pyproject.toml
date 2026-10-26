@@ -14,6 +14,7 @@ dependencies = [
     "dropbox>=12.2.4",
     "mysql-connector-python",
     "pydantic>=2",
+    "pymongo>=4.19.0",
     "pyyaml",
     "requests>=2.34.2",
 ]

@@ -29,3 +29,14 @@ target:
       path:
         - /etc
 ```
+
+`mongodb` снимает дамп через `mongodump --archive --gzip`. На сервере должна быть команда `mongodump`. Поле `database` — шаблон имени: `*` означает все базы и стоит по умолчанию. Каждая подходящая база становится файлом `{база}.archive.gz`, а срез упаковывает эти файлы в свой архив.
+
+```yaml
+target:
+  - name: mongo
+    type: mongodb
+    config:
+      uri: mongodb://backup:secret@localhost:27017
+      database: app_*
+```
