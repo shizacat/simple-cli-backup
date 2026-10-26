@@ -6,4 +6,4 @@ class ConfigError(Exception):
 
 
 class PlaceError(Exception):
-    """Место хранения не удалось создать."""
+    """Ошибка места хранения."""

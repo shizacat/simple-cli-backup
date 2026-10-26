@@ -10,12 +10,14 @@ name: daily
 places:
   - name: local
     type: folder
-    path: /tmp
-    rotate:
-      count: 4
+    config:
+      path: /tmp
+      rotate:
+        count: 4
   - name: cloud
     type: dropbox
-    token: secret
+    config:
+      token: secret
 slises:
   - name: main
     place:
@@ -43,9 +45,9 @@ def test_from_yaml_reads_sections() -> None:
     assert config.name == "daily"
     assert config.places[0].name == "local"
     assert config.places[0].type == "folder"
-    assert config.places[0].path == "/tmp"
-    assert config.places[0].rotate == {"count": 4}
-    assert config.places[1].token == "secret"
+    assert config.places[0].config["path"] == "/tmp"
+    assert config.places[0].config["rotate"] == {"count": 4}
+    assert config.places[1].config["token"] == "secret"
     assert config.slises[0].place == ["local", "cloud"]
     assert config.slises[0].target[0].path == ["/var"]
     assert config.slises[0].notify[0].status == "bad"

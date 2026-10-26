@@ -7,9 +7,10 @@
     places:
       - name: local
         type: folder
-        path: /var/backups
-        rotate:
-          count: 6
+        config:
+          path: /var/backups
+          rotate:
+            count: 6
 
     notices:
       - name: mail
@@ -27,11 +28,11 @@
         notify:
           - name: mail
             status: bad
-    
+
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -40,12 +41,20 @@ from sback.lib.exception import ConfigError
 
 
 class Place(BaseModel):
-    """Место хранения бэкапа."""
+    """Место хранения бэкапа.
 
-    model_config = ConfigDict(extra="allow")
+    Поле config проверяется моделью, которую задает класс места
+    через PlaceBase.config_model.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     name: str = Field(description="Имя места хранения")
     type: str = Field(description="Тип плагина place")
+    config: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Настройки конкретного места",
+    )
 
 
 class Target(BaseModel):
