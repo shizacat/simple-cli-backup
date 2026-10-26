@@ -13,8 +13,10 @@ from sback.lib.exception import ArchiveNameError, ConfigError, PlaceError, Targe
 
 def plugin_info() -> None:
     """Отображает информацию о плагинах (target и place)."""
-    import sback.app  # регистрация плагинов
-    from sback.base import PlaceBase, TargetBase
+    import sback.places  # регистрация мест
+    import sback.targets  # регистрация целей
+    from sback.lib.place_base import PlaceBase
+    from sback.lib.target_base import TargetBase
 
     print("Target plugins:")
     for cls in TargetBase.__subclasses__():

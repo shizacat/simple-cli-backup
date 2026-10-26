@@ -83,3 +83,16 @@ def test_missing_config_file(capsys: pytest.CaptureFixture[str]) -> None:
 def test_config_and_test_are_mutually_exclusive() -> None:
     with pytest.raises(SystemExit):
         main(["--config", "a.yml", "-t", "b.yml"])
+
+
+def test_plugin_info_lists_registered_plugins(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["--plugin-info"]) == 0
+    assert capsys.readouterr().out == (
+        "Target plugins:\n"
+        "    file - Работает с файлами и каталогами\n"
+        "\n"
+        "Place plugins:\n"
+        "    folder - Копирует файлы в указанную папку\n"
+    )
