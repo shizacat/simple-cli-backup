@@ -6,7 +6,9 @@ import pytest
 
 from sback.lib.backup import Backup
 from sback.lib.config import Config
-from sback.lib.exception import ConfigError
+from sback.lib.exception import ConfigError, TargetError
+from sback.lib.place_base import PlaceBase
+from sback.lib.target_base import TargetBase
 
 
 def _config(source: Path, destination: Path) -> Config:
@@ -43,6 +45,52 @@ def test_process_stores_slise_archive(tmp_path: Path) -> None:
     ]
     with tarfile.open(stored[0], "r:gz") as tar:
         assert tar.getnames() == ["note.txt"]
+
+
+def test_init_initializes_places(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "note.txt"
+    source.write_text("backup", encoding="utf-8")
+    destination = tmp_path / "backups"
+    destination.mkdir()
+    started: list[str] = []
+    monkeypatch.setattr(
+        PlaceBase, "init", lambda self: started.append(self._config.name)
+    )
+
+    Backup(_config(source, destination)).init()
+
+    assert started == ["local"]
+
+
+def test_process_skips_place_when_target_has_no_files(tmp_path: Path) -> None:
+    destination = tmp_path / "backups"
+    destination.mkdir()
+
+    Backup(_config(tmp_path / "absent.txt", destination)).process()
+
+    assert list(destination.iterdir()) == []
+
+
+def test_process_wraps_archive_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "note.txt"
+    source.write_text("backup", encoding="utf-8")
+    destination = tmp_path / "backups"
+    destination.mkdir()
+
+    class _MissingFile:
+        def process(self, tmp_dir: Path) -> list[Path]:
+            return [tmp_dir / "gone.txt"]
+
+    monkeypatch.setattr(TargetBase, "factory", lambda config: _MissingFile())
+
+    with pytest.raises(TargetError, match="сборки среза"):
+        Backup(_config(source, destination)).process()
+
+    assert list(destination.iterdir()) == []
 
 
 def test_unknown_place_raises(tmp_path: Path) -> None:
