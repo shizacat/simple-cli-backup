@@ -40,3 +40,23 @@ target:
       uri: mongodb://backup:secret@localhost:27017
       database: app_*
 ```
+
+`mysql` пишет SQL-дамп через `mysql-connector-python`, без `mysqldump`. Цель сама открывает подключение, читает базу данных и собирает файл дампа.
+
+Поле `database` — шаблон имени: `*` означает все пользовательские базы и стоит по умолчанию. `information_schema`, `performance_schema`, `mysql` и `sys` при `*` пропускаются. Для каждой подходящей базы цель делает `SHOW FULL TABLES` и оставляет только `BASE TABLE`. Представления, процедуры, триггеры и события в дамп не входят.
+
+Для каждой таблицы цель берет `SHOW CREATE TABLE` и `SELECT *`. В `{база}.sql` попадают `SET NAMES`, отключение `FOREIGN_KEY_CHECKS`, `DROP TABLE`, оператор `CREATE`, который вернул сервер, и `INSERT` со значениями строк. Пустая таблица остается только со структурой. Срез упаковывает эти файлы в свой архив.
+
+Флаг `mysqldump: true` переключает запись файла на утилиту `mysqldump`. Список баз цель по-прежнему читает коннектором, а `{база}.sql` пишет утилита с `--single-transaction`, `--routines`, `--triggers` и `--events`. По умолчанию флаг выключен, и утилита не вызывается.
+
+```yaml
+target:
+  - name: db
+    type: mysql
+    config:
+      host: localhost
+      user: backup
+      password: secret
+      database: app_*
+      mysqldump: true
+```
