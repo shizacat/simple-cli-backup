@@ -36,9 +36,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-
-class ConfigError(Exception):
-    """Файл настроек не удалось прочитать или он не соответствует формату."""
+from sback.lib.exception import ConfigError
 
 
 class Place(BaseModel):

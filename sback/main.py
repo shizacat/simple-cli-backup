@@ -6,7 +6,8 @@ import argparse
 import sys
 
 from sback import __version__
-from sback.lib.config import Config, ConfigError
+from sback.lib.config import Config
+from sback.lib.exception import ConfigError
 
 
 def plugin_info() -> None:

@@ -2,7 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from sback.lib.config import Config, ConfigError
+from sback.lib.config import Config
+from sback.lib.exception import ConfigError
 
 VALID = """
 name: daily
