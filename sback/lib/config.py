@@ -1,4 +1,34 @@
-"""Модель файла настроек."""
+"""Модель файла настроек.
+
+Пример:
+
+.. code-block:: yaml
+
+    places:
+      - name: local
+        type: folder
+        path: /var/backups
+        rotate:
+          count: 6
+
+    notices:
+      - name: mail
+        type: email
+
+    slises:
+      - name: daily
+        place:
+          - local
+        target:
+          - name: files
+            type: file
+            path:
+              - /etc
+        notify:
+          - name: mail
+            status: bad
+    
+"""
 
 from pathlib import Path
 from typing import Literal
@@ -16,8 +46,8 @@ class Place(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    name: str
-    type: str
+    name: str = Field(description="Имя места хранения")
+    type: str = Field(description="Тип плагина place")
 
 
 class Target(BaseModel):
@@ -25,15 +55,18 @@ class Target(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    name: str
-    type: str
+    name: str = Field(description="Имя цели")
+    type: str = Field(description="Тип плагина target")
 
 
 class Notify(BaseModel):
     """Ссылка на уведомление в срезе."""
 
-    name: str
-    status: Literal["good", "bad"] | None = None
+    name: str = Field(description="Имя канала уведомлений")
+    status: Literal["good", "bad"] | None = Field(
+        default=None,
+        description="Статус, при котором отправлять уведомление: good или bad",
+    )
 
 
 class Slise(BaseModel):
@@ -61,10 +94,15 @@ class Config(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    name: str | None = None
-    places: list[Place]
-    slises: list[Slise]
-    notices: list[Notice] = Field(default_factory=list)
+    name: str | None = Field(default=None, description="Имя конфигурации")
+    places: list[Place] = Field(description="Места хранения бэкапов")
+    slises: list[Slise] = Field(
+        description="Срезы: цели и места, куда складывается результат"
+    )
+    notices: list[Notice] = Field(
+        default_factory=list,
+        description="Каналы уведомлений",
+    )
 
     @classmethod
     def from_file(cls, config_file: str | Path) -> "Config":
