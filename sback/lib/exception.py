@@ -15,3 +15,7 @@ class TargetError(Exception):
 
 class ArchiveNameError(Exception):
     """Имя архива не соответствует формату {срез}_{год}.{месяц}.{день}.{NNNN}.tar."""
+
+
+class NotifyError(Exception):
+    """Ошибка уведомления."""

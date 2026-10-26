@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from sback.lib.backup import Backup
+from sback.lib.exception import NotifyError
 from sback.main import main
 
 
@@ -83,6 +84,20 @@ def test_missing_config_file(capsys: pytest.CaptureFixture[str]) -> None:
 def test_config_and_test_are_mutually_exclusive() -> None:
     with pytest.raises(SystemExit):
         main(["--config", "a.yml", "-t", "b.yml"])
+
+
+def test_notify_error_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    config_file = _paths(tmp_path)
+
+    def fail_process(self: Backup) -> None:
+        raise NotifyError("smtp down")
+
+    monkeypatch.setattr(Backup, "process", fail_process)
+
+    assert main(["--config", str(config_file)]) == 1
+    assert "[E] smtp down" in capsys.readouterr().out
 
 
 def test_plugin_info_lists_registered_plugins(

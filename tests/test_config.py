@@ -35,8 +35,9 @@ slises:
 notices:
   - name: mail
     type: email
-    to:
-      - a@example.com
+    config:
+      to:
+        - a@example.com
 """
 
 
@@ -53,7 +54,7 @@ def test_from_yaml_reads_sections() -> None:
     assert config.slises[0].place == ["local", "cloud"]
     assert config.slises[0].target[0].config["path"] == ["/var"]
     assert config.slises[0].notify[0].status == "bad"
-    assert config.notices[0].to == ["a@example.com"]
+    assert config.notices[0].config["to"] == ["a@example.com"]
 
 
 def test_from_yaml_fills_defaults() -> None:

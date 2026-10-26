@@ -8,7 +8,13 @@ import sys
 from sback import __version__
 from sback.lib.backup import Backup
 from sback.lib.config import Config
-from sback.lib.exception import ArchiveNameError, ConfigError, PlaceError, TargetError
+from sback.lib.exception import (
+    ArchiveNameError,
+    ConfigError,
+    NotifyError,
+    PlaceError,
+    TargetError,
+)
 
 
 def plugin_info() -> None:
@@ -107,7 +113,7 @@ def _run_backup(config_file: str, *, init: bool = False) -> int:
 
     try:
         backup = Backup(config)
-    except (ConfigError, PlaceError, TargetError) as exc:
+    except (ConfigError, NotifyError, PlaceError, TargetError) as exc:
         print(f"Error: \n\t{exc}")
         return 1
 
@@ -119,7 +125,7 @@ def _run_backup(config_file: str, *, init: bool = False) -> int:
     except KeyboardInterrupt:
         print("\nThe operation was interrupted")
         return 0
-    except (ArchiveNameError, ConfigError, PlaceError, TargetError) as exc:
+    except (ArchiveNameError, ConfigError, NotifyError, PlaceError, TargetError) as exc:
         print("[E]", exc)
         return 1
 

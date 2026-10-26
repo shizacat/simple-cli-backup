@@ -15,6 +15,11 @@
     notices:
       - name: mail
         type: email
+        config:
+          server: localhost
+          to:
+            - a@example.com
+          from: backup@example.com
 
     slises:
       - name: daily
@@ -107,12 +112,20 @@ class Slise(BaseModel):
 
 
 class Notice(BaseModel):
-    """Канал уведомлений."""
+    """Канал уведомлений.
 
-    model_config = ConfigDict(extra="allow")
+    Поле config проверяется моделью, которую задает класс уведомления
+    через NotifyBase.config_model.
+    """
 
-    name: str
-    type: str
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(description="Имя канала уведомлений")
+    type: str = Field(description="Тип плагина notify")
+    config: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Настройки конкретного канала",
+    )
 
 
 class Config(BaseModel):
