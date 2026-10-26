@@ -23,8 +23,9 @@
         target:
           - name: files
             type: file
-            path:
-              - /etc
+            config:
+              path:
+                - /etc
         notify:
           - name: mail
             status: bad
@@ -68,12 +69,20 @@ class Place(BaseModel):
 
 
 class Target(BaseModel):
-    """Цель бэкапа внутри среза."""
+    """Цель бэкапа внутри среза.
 
-    model_config = ConfigDict(extra="allow")
+    Поле config проверяется моделью, которую задает класс цели
+    через TargetBase.config_model.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     name: str = Field(description="Имя цели")
     type: str = Field(description="Тип плагина target")
+    config: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Настройки конкретной цели",
+    )
 
 
 class Notify(BaseModel):

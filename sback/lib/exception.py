@@ -9,5 +9,9 @@ class PlaceError(Exception):
     """Ошибка места хранения."""
 
 
+class TargetError(Exception):
+    """Ошибка цели бэкапа."""
+
+
 class ArchiveNameError(Exception):
     """Имя архива не соответствует формату {срез}_{год}.{месяц}.{день}.{NNNN}.tar."""

@@ -26,8 +26,9 @@ slises:
     target:
       - name: files
         type: file
-        path:
-          - /var
+        config:
+          path:
+            - /var
     notify:
       - name: mail
         status: bad
@@ -50,7 +51,7 @@ def test_from_yaml_reads_sections() -> None:
     assert config.places[0].rotate.count == 4
     assert config.places[1].config["token"] == "secret"
     assert config.slises[0].place == ["local", "cloud"]
-    assert config.slises[0].target[0].path == ["/var"]
+    assert config.slises[0].target[0].config["path"] == ["/var"]
     assert config.slises[0].notify[0].status == "bad"
     assert config.notices[0].to == ["a@example.com"]
 
