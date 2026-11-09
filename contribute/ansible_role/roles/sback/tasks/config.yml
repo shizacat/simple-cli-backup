@@ -78,7 +78,7 @@
         state: absent
 
     - name: Восстановить контексты SELinux для настроек и cron
-      when: (ansible_selinux | default({"status": "disabled"})).status == "enabled"
+      when: "(ansible_selinux | default({'status': 'disabled'})).status == 'enabled'"
       ansible.builtin.command:
         argv: "{{ ['restorecon', '-R', sback_config_path | dirname, sback_config_path] + ([sback_cron_path] if sback_cron_enabled | bool else []) }}"
       changed_when: false

@@ -130,7 +130,7 @@
         force: true
 
     - name: Восстановить контексты SELinux
-      when: (ansible_selinux | default({"status": "disabled"})).status == "enabled"
+      when: "(ansible_selinux | default({'status': 'disabled'})).status == 'enabled'"
       ansible.builtin.command:
         argv:
           - restorecon
